@@ -116,6 +116,7 @@ class Carts(db.Model):
                 cart_dict["item_id"] = value
         
         total_cost = product.price * cart_dict["item_quantity"] 
+        cart_dict["total_item_cost_number"] = total_cost
         cart_dict["total_item_cost"] = "${:,.2f}".format(total_cost)
         return cart_dict
 
