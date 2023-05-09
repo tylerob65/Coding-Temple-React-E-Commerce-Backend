@@ -108,7 +108,6 @@ class Carts(db.Model):
             "item_quantity":self.item_quantity
 
         }
-        print(product.to_dict())
         for key, value in product.to_dict().items():
             if key != "id":
                 cart_dict[key] = value

@@ -1,16 +1,13 @@
 from app import app
 from app.models import Products, Carts, Users, db
-from flask import flash, redirect, render_template, request
+from flask import request
 from app.auth_helpers import basic_auth, token_auth
-from werkzeug.security import generate_password_hash
 
 
 @app.post('/signup')
 def signUp():
     data = request.json
-    print(data)
     
-
     # Get data from request
     username = data['username']
     email = data['email']
@@ -54,7 +51,6 @@ def signUp():
 @basic_auth.login_required
 def login():
     # user = basic_auth.verify_password()
-    print("gothere")
     return {
         'status': 'ok',
         'message': "You have successfully logged in.",
@@ -83,8 +79,6 @@ def productPage(product_id):
 @app.post('/additem/<int:product_id>')
 @token_auth.login_required
 def addItemToCart(product_id):
-    print("got to route")
-    print(token_auth.current_user())
     product = Products.query.get(product_id)
     if not product:
         return {
@@ -98,7 +92,6 @@ def addItemToCart(product_id):
     
 
     if not cart_entry:
-        print("not carts")
         new_entry = Carts(user_id,product_id,1)
         new_entry.saveToDB()
     else:
@@ -113,8 +106,6 @@ def addItemToCart(product_id):
 @app.post('/removeitem/<int:product_id>')
 @token_auth.login_required
 def removeItemFromCart(product_id):
-    print("got to route")
-    print(token_auth.current_user())
     product = Products.query.get(product_id)
     if not product:
         return {
@@ -126,7 +117,6 @@ def removeItemFromCart(product_id):
     cart_entry = Carts.query.filter(db.and_(Carts.user_id==user_id,Carts.product_id==product_id)).all()
     
     if not cart_entry:
-        print("not in cart")
         return {
             "status":"not ok",
             "message":"Item not in cart, can't delete it"
@@ -153,11 +143,9 @@ def removeItemFromCart(product_id):
 @app.route('/mycart/<int:user_id>')
 # @token_auth.login_required
 def mycart(user_id):
-    print("got to route")
     user = Users.query.get(user_id)
     # user = token_auth.current_user()
     # user_id = user.id
-    print(user.cart_items)
 
     total_cart_cost = 0
     cart = []
@@ -177,8 +165,6 @@ def mycart(user_id):
 @app.post('/emptycart')
 @token_auth.login_required
 def emptyCart():
-    print("got to route")
-    print(token_auth.current_user())
     user = token_auth.current_user()
     cart_items = user.cart_items
     for cart_item in cart_items:
