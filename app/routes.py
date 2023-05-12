@@ -1,7 +1,8 @@
 from app import app
 from app.models import Products, Carts, Users, db
-from flask import request
+from flask import redirect, request
 from app.auth_helpers import basic_auth, token_auth
+from flask_cors import cross_origin
 
 
 @app.post('/signup')
@@ -173,6 +174,44 @@ def emptyCart():
         "status":"ok",
         "message":"You removed all items from cart"
     }, 200
+
+@app.post('/checkout')
+@token_auth.login_required
+def checkout():
+    user = token_auth.current_user()
+    cart_items = user.cart_items
+    print(request.origin)
+    # try:
+    line_items = []
+    for cart_item in cart_items:
+        prod = cart_item.product
+        line_items.append({
+            "price_data": {
+                "currency":"usd",
+                "product_data": {"name": prod.product_name},
+                "unit_amount":prod.price,
+                "tax_behavior":"exclusive",
+            },
+            "quantity":cart_item.item_quantity,
+        })
+    print(line_items)
+
+    
+    # return redirect('http://localhost:3000',code=303)
+
+
+    response = redirect('http://localhost:3000')
+    origin = request.headers.get("Origin")
+    response.headers["Access-Control-Allow-Origin"] = origin
+    return response
+        
+
+# app = Flask(__name__)
+
+# @app.post('/checkout')
+# def checkout():
+    
+#     return redirect('http://localhost:3000')
 
     
 

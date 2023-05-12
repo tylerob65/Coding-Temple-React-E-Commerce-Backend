@@ -10,7 +10,10 @@ app.config.from_object(Config)
 
 db.init_app(app)
 migrate = Migrate(app,db)
-cors = CORS()
+# CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+# CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+# cors = CORS(app,resources={r"/*":{"origins":"http://localhost:3000"}})
+cors = CORS(app)
 cors.init_app(app)
 
 from . import routes
