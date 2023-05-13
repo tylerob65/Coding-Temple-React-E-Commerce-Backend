@@ -3,6 +3,10 @@ from app.models import Products, Carts, Users, db
 from flask import redirect, request
 from app.auth_helpers import basic_auth, token_auth
 from flask_cors import cross_origin
+import stripe
+import os
+
+stripe.api_key = os.environ.get('STRIPE_API_KEY')
 
 
 @app.post('/signup')
@@ -177,7 +181,7 @@ def emptyCart():
 
 @app.post('/checkout')
 def checkout():
-    
+    print(stripe.api_key)
     print("form",request.form["apitoken"])
     apitoken = request.form["apitoken"]
     user = Users.query.filter_by(apitoken=apitoken).first()
@@ -186,25 +190,35 @@ def checkout():
         "status":"not ok",
         "message":"User does not exist"
     }, 400
-    
 
-    # try:
-    # line_items = []
-    # for cart_item in cart_items:
-    #     prod = cart_item.product
-    #     line_items.append({
-    #         "price_data": {
-    #             "currency":"usd",
-    #             "product_data": {"name": prod.product_name},
-    #             "unit_amount":prod.price,
-    #             "tax_behavior":"exclusive",
-    #         },
-    #         "quantity":cart_item.item_quantity,
-    #     })
-    # print(line_items)
+    cart_items = user.cart_items
+    line_items = []
+    for cart_item in cart_items:
+        prod = cart_item.product
+        line_items.append({
+            "price_data": {
+                "currency":"usd",
+                "product_data": {"name": prod.product_name},
+                "unit_amount":int(prod.price*100),
+                "tax_behavior":"exclusive",
+            },
+            "quantity":cart_item.item_quantity,
+        })
+    print(line_items)
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+        line_items=line_items,
+        mode="payment",
+        success_url="http://localhost:3000/mycart" + '?success=true',
+        cancel_url="http://localhost:3000/mycart" + '?canceled=true',)
+    except Exception as e:
+        print(e)
+        return str(e)
 
     
-    return redirect('https://google.com',code=303)
+    return redirect(checkout_session.url, code=303)
+    # return redirect('https://google.com',code=303)
     return "Hi"
     # return redirect('http://localhost:3000',code=303)
 
