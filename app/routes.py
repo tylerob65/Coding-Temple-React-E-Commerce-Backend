@@ -176,34 +176,43 @@ def emptyCart():
     }, 200
 
 @app.post('/checkout')
-@token_auth.login_required
 def checkout():
-    user = token_auth.current_user()
-    cart_items = user.cart_items
-    print(request.origin)
+    
+    print("form",request.form["apitoken"])
+    apitoken = request.form["apitoken"]
+    user = Users.query.filter_by(apitoken=apitoken).first()
+    if not user:
+        return {
+        "status":"not ok",
+        "message":"User does not exist"
+    }, 400
+    
+
     # try:
-    line_items = []
-    for cart_item in cart_items:
-        prod = cart_item.product
-        line_items.append({
-            "price_data": {
-                "currency":"usd",
-                "product_data": {"name": prod.product_name},
-                "unit_amount":prod.price,
-                "tax_behavior":"exclusive",
-            },
-            "quantity":cart_item.item_quantity,
-        })
-    print(line_items)
+    # line_items = []
+    # for cart_item in cart_items:
+    #     prod = cart_item.product
+    #     line_items.append({
+    #         "price_data": {
+    #             "currency":"usd",
+    #             "product_data": {"name": prod.product_name},
+    #             "unit_amount":prod.price,
+    #             "tax_behavior":"exclusive",
+    #         },
+    #         "quantity":cart_item.item_quantity,
+    #     })
+    # print(line_items)
 
     
+    return redirect('https://google.com',code=303)
+    return "Hi"
     # return redirect('http://localhost:3000',code=303)
 
 
-    response = redirect('http://localhost:3000')
-    origin = request.headers.get("Origin")
-    response.headers["Access-Control-Allow-Origin"] = origin
-    return response
+    # response = redirect('http://localhost:3000')
+    # origin = request.headers.get("Origin")
+    # response.headers["Access-Control-Allow-Origin"] = origin
+    # return response
         
 
 # app = Flask(__name__)
